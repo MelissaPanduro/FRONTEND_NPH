@@ -1,0 +1,231 @@
+<div class="min-h-screen bg-gray-50 p-6">
+        <!-- Header -->
+        <header class="bg-white shadow-md py-4 mb-6">
+        <div class="w-full px-4">
+            <h1 class="text-2xl font-extrabold text-blue-900 md:text-4xl">
+            <span class="bg-gradient-to-r from-sky-400 to-blue-600 bg-clip-text text-transparent">
+                <i class="fas fa-home mr-2"></i> Gestión de Casas
+            </span>
+            </h1>
+        </div>
+        </header>
+    
+        <div class="container mx-auto my-4 p-2 md:p-4 bg-white shadow-md rounded-lg">
+        <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+            <h2 class="text-lg md:text-xl font-bold mb-2 md:mb-0">
+            <i class="fas fa-list mr-2"></i>Lista de Casas
+            </h2>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <!-- Filtro Activo/Inactivo -->
+            <button 
+                (click)="toggleHomes()"
+                class="flex items-center px-4 py-2 rounded-lg font-medium transition-colors"
+                [class.bg-green-600]="showingActive"
+                [class.bg-gray-600]="!showingActive"
+                [class.text-white]="true"
+            >
+                <i class="fas mr-2" [class.fa-eye]="showingActive" [class.fa-eye-slash]="!showingActive"></i>
+                {{ showingActive ? 'Activos' : 'Inactivos' }}
+            </button>
+    
+            <!-- Botón Agregar -->
+            <button 
+                (click)="openFormHome()"
+                class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                <i class="fas fa-plus mr-2"></i>
+                <span class="hidden sm:inline">Nueva Casa</span>
+            </button>
+    
+            <!-- Dropdown de Exportación -->
+            <div class="relative inline-block export-dropdown-container">
+                <button 
+                (click)="toggleExportDropdown($event)"
+                class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                <i class="fas fa-file-export mr-2"></i>
+                <span class="hidden md:inline">Exportar</span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                
+                <div 
+                *ngIf="showExportDropdown"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+                >
+                <div class="py-1">
+                    <a (click)="downloadPDF(); showExportDropdown = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <i class="fas fa-file-pdf text-red-500 mr-2"></i> PDF
+                    </a>
+                    <a (click)="downloadExcel(); showExportDropdown = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <i class="fas fa-file-excel text-green-500 mr-2"></i> Excel
+                    </a>
+                    <a (click)="downloadCSV(); showExportDropdown = false" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <i class="fas fa-file-csv text-blue-500 mr-2"></i> CSV
+                    </a>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    
+        <!-- Buscador - Icono mejorado -->
+        <div class="mb-4">
+            <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                [(ngModel)]="searchTerm" 
+                (input)="applyFilter()"
+                placeholder="Buscar por nombre, dirección o ID..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+            </div>
+        </div>
+    
+        <!-- Tabla para pantallas medianas y grandes -->
+        <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full border-separate border-spacing-y-2 text-sm md:text-base">
+            <thead>
+                <tr>
+                <th class="px-2 md:px-4 py-2 md:py-3 font-semibold text-blue-900 bg-blue-100 text-center">ID</th>
+                <th class="px-2 md:px-4 py-2 md:py-3 font-semibold text-blue-900 bg-blue-100 text-center">Nombre</th>
+                <th class="px-2 md:px-4 py-2 md:py-3 font-semibold text-blue-900 bg-blue-100 text-center">Dirección</th>
+                <th class="px-2 md:px-4 py-2 md:py-3 font-semibold text-blue-900 bg-blue-100 text-center">Estado</th>
+                <th class="px-2 md:px-4 py-2 md:py-3 font-semibold text-blue-900 bg-blue-100 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let home of filteredHomes" class="bg-gray-50 hover:bg-gray-100 text-center">
+                <td class="px-2 md:px-4 py-2 md:py-3 font-bold text-gray-900">{{ home.id_home }}</td>
+                <td class="px-2 md:px-4 py-2 md:py-3 text-blue-600">{{ home.names }}</td>
+                <td class="px-2 md:px-4 py-2 md:py-3 text-gray-900">{{ home.address }}</td>
+                <td class="px-2 md:px-4 py-2 md:py-3">
+                    <span [class.text-green-600]="home.status === 'A'" [class.text-red-600]="home.status !== 'A'">
+                    {{ home.status === 'A' ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </td>
+                <td class="px-2 md:px-4 py-2 md:py-3 flex justify-center space-x-2">
+                    <button 
+                    (click)="editHome(home)"
+                    class="text-blue-500 hover:text-blue-700 text-lg"
+                    >
+                    <i class="fas fa-edit"></i>
+                    </button>
+                    <button 
+                    (click)="toggleHomeState(home.id_home, home.names, home.status)"
+                    [class.text-red-500]="home.status === 'A'"
+                    [class.text-green-500]="home.status !== 'A'"
+                    [class.hover:text-red-700]="home.status === 'A'"
+                    [class.hover:text-green-700]="home.status !== 'A'"
+                    class="text-lg"
+                    >
+                    <i class="fas" [class.fa-times]="home.status === 'A'" [class.fa-check]="home.status !== 'A'"></i>
+                    </button>
+                </td>
+                </tr>
+                <tr *ngIf="filteredHomes.length === 0">
+                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                    <div class="flex flex-col items-center justify-center py-8">
+                    <i class="fas fa-database text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-lg font-medium text-gray-700">No se encontraron registros</p>
+                    <p class="text-sm text-gray-500 mb-4">No hay casas que coincidan con tu búsqueda</p>
+                    <button 
+                        (click)="openFormHome()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <i class="fas fa-plus mr-2"></i>Agregar nueva casa
+                    </button>
+                    </div>
+                </td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+    
+        <!-- Vista de tarjetas para móviles -->
+        <div class="md:hidden">
+            <div *ngFor="let home of filteredHomes" class="bg-gray-50 p-3 rounded-lg mb-3 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold text-blue-900">
+                <i class="fas fa-home text-blue-500 mr-1"></i> {{ home.names }}
+                </h3>
+                <div class="flex space-x-2">
+                <button 
+                    (click)="editHome(home)"
+                    class="text-blue-500 hover:text-blue-700 text-lg"
+                >
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                    (click)="toggleHomeState(home.id_home, home.names, home.status)"
+                    [class.text-red-500]="home.status === 'A'"
+                    [class.text-green-500]="home.status !== 'A'"
+                    [class.hover:text-red-700]="home.status === 'A'"
+                    [class.hover:text-green-700]="home.status !== 'A'"
+                    class="text-lg"
+                >
+                    <i class="fas" [class.fa-times]="home.status === 'A'" [class.fa-check]="home.status !== 'A'"></i>
+                </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                <p class="font-semibold text-gray-700"><i class="fas fa-id-card text-blue-500 mr-1"></i> ID:</p>
+                <p>{{ home.id_home }}</p>
+                </div>
+                <div>
+                <p class="font-semibold text-gray-700"><i class="fas fa-map-marker-alt text-blue-500 mr-1"></i> Dirección:</p>
+                <p>{{ home.address }}</p>
+                </div>
+                <div>
+                <p class="font-semibold text-gray-700"><i class="fas fa-circle text-blue-500 mr-1"></i> Estado:</p>
+                <p [class.text-green-600]="home.status === 'A'" [class.text-red-600]="home.status !== 'A'">
+                    {{ home.status === 'A' ? 'Activo' : 'Inactivo' }}
+                </p>
+                </div>
+            </div>
+            </div>
+            
+            <div *ngIf="filteredHomes.length === 0" class="text-center py-8">
+            <i class="fas fa-database text-4xl text-gray-400 mb-2"></i>
+            <p class="text-lg font-medium text-gray-700">No se encontraron registros</p>
+            <p class="text-sm text-gray-500 mb-4">No hay casas que coincidan con tu búsqueda</p>
+            <button 
+                (click)="openFormHome()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                <i class="fas fa-plus mr-2"></i>Agregar nueva casa
+            </button>
+            </div>
+        </div>
+        </div>
+    
+        <!-- Diálogo Modal -->
+        <div *ngIf="showDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-0">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-xl mx-2 md:mx-auto overflow-auto max-h-screen">
+            <!-- Encabezado del Modal -->
+            <div class="bg-blue-100 p-3 md:p-4 rounded-t-lg sticky top-0 z-10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg md:text-xl font-bold text-blue-900">
+                <i class="fas fa-home mr-2"></i>
+                {{ homeToEdit ? 'Editar Casa' : 'Agregar Nueva Casa' }}
+                </h3>
+                <button class="text-gray-600 hover:text-gray-800" (click)="showDialog = false">
+                <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            </div>
+            
+            <!-- Cuerpo del Modal -->
+            <div class="p-3 md:p-6">
+            <app-form-home 
+                [homeData]="homeToEdit"
+                (onClose)="handleDialogResult($event)"
+            ></app-form-home>
+            </div>
+        </div>
+        </div>
+</div>

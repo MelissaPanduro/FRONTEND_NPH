@@ -1,0 +1,337 @@
+<!-- Modal para Aplicaciones de Vacunas -->
+<div *ngIf="isModalOpen" class="fixed inset-0 flex items-center justify-center z-50">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closeModal()"></div>
+
+  <!-- Modal con gradiente profesional -->
+  <div class="bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-gray-800 dark:to-blue-900 rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4 relative border border-blue-200 dark:border-blue-800">
+    <!-- Encabezado del Modal -->
+    <div class="flex justify-between items-center p-4 border-b border-blue-300 dark:border-blue-700 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-lg">
+      <h2 class="text-xl font-bold text-white">
+        {{ isEditMode ? 'Editar Aplicación de Vacuna' : 'Registrar Nueva Aplicación de Vacuna' }}
+      </h2>
+      <button type="button" class="text-white hover:text-gray-200 hover:bg-blue-700/70 rounded-full p-1 transition-all" (click)="closeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Formulario -->
+    <form (ngSubmit)="isEditMode ? updateApplication() : addApplication()" class="p-6">
+      <!-- Sección: Información Básica -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-blue-200 dark:border-blue-700">
+          Información Básica
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Vacuna -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="cycleLifeId">
+              <i class="fas fa-syringe mr-1 text-blue-600"></i> Vacuna <span class="text-red-500">*</span>
+            </label>
+            <select 
+              class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+              id="cycleLifeId" 
+              [(ngModel)]="applicationForm.cycleLifeId" 
+              name="cycleLifeId" 
+              (change)="onCycleLifeChange()" 
+              required>
+              <option value="" disabled selected>Seleccionar vacuna</option>
+              <option *ngFor="let cycleLife of cycleLifes" [value]="cycleLife.id">{{ cycleLife.nameIto }}</option>
+            </select>
+            <p *ngIf="formSubmitted && !applicationForm.cycleLifeId" class="mt-1 text-sm text-red-500">
+              Por favor seleccione una vacuna
+            </p>
+          </div>
+
+          <!-- Hen ID (campo automático con visualización mejorada) -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="henId">
+              <i class="fas fa-warehouse mr-1 text-blue-600"></i> Galpón Asignado
+            </label>
+            <input 
+              type="text" 
+              class="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400" 
+              id="henIdDisplay" 
+              [value]="applicationForm.henId ? 'Galpón ' + applicationForm.henId : ''" 
+              readonly 
+              placeholder="Se asigna automáticamente" />
+            
+            <!-- Campo oculto para mantener el valor real en el formulario -->
+            <input 
+              type="hidden" 
+              [(ngModel)]="applicationForm.henId" 
+              name="henId" />
+            
+            <p class="mt-1 text-xs text-gray-500">Este campo se completa automáticamente al seleccionar la vacuna</p>
+          </div>
+        </div>
+
+        <!-- Información automática de la vacuna seleccionada -->
+        <div *ngIf="applicationForm.cycleLifeId" class="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <h4 class="text-sm font-semibold text-green-800 dark:text-green-300 mb-3">
+            <i class="fas fa-info-circle mr-1"></i> Información de la Vacuna Seleccionada
+          </h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Fecha de Finalización -->
+            <div class="form-group">
+              <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400" for="endDate">
+                <i class="far fa-calendar mr-1"></i> Fecha de Finalización
+              </label>
+              <input 
+                type="date" 
+                class="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400" 
+                id="endDate" 
+                [(ngModel)]="applicationForm.endDate" 
+                name="endDate" 
+                readonly />
+            </div>
+
+            <!-- Tiempo en Semanas -->
+            <div class="form-group">
+              <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400" for="timesInWeeks">
+                <i class="far fa-clock mr-1"></i> Tiempo en Semanas
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  class="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400" 
+                  id="timesInWeeks" 
+                  [(ngModel)]="applicationForm.timesInWeeks" 
+                  name="timesInWeeks" 
+                  readonly 
+                  placeholder="Automático" />
+                <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                  <span class="text-xs text-gray-500">semanas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado de carga -->
+          <div class="mt-3 flex items-center text-sm">
+            <i class="fas fa-check-circle text-green-600 mr-2"></i>
+            <span class="text-green-700 dark:text-green-300">Información cargada correctamente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección: Detalles de Aplicación -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-blue-200 dark:border-blue-700">
+          Detalles de Aplicación
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Fecha de Registro -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="dateRegistration">
+              <i class="far fa-calendar-alt mr-1 text-blue-600"></i> Fecha de Registro <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="date" 
+              class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+              id="dateRegistration" 
+              [(ngModel)]="applicationForm.dateRegistration" 
+              name="dateRegistration" 
+              required />
+            <p *ngIf="formSubmitted && !applicationForm.dateRegistration" class="mt-1 text-sm text-red-500">
+              Por favor ingrese la fecha de registro
+            </p>
+          </div>
+          
+          <!-- Vía de Aplicación -->
+<div class="form-group">
+  <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="viaApplication">
+    <i class="fas fa-route mr-1 text-blue-600"></i> Vía de Aplicación <span class="text-red-500">*</span>
+  </label>
+  <select 
+    class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+    id="viaApplication" 
+    name="viaApplicationSelect"
+    (change)="onViaApplicationChange($event)"
+    required>
+    <option value="" disabled selected>Seleccionar vía</option>
+    <option value="Oral">Oral</option>
+    <option value="Intramuscular">Intramuscular</option>
+    <option value="Subcutánea">Subcutánea</option>
+    <option value="Intravenosa">Intravenosa</option>
+    <option value="Ocular">Ocular</option>
+    <option value="Nasal">Nasal</option>
+    <option value="Otra">Otra (especificar)</option>
+  </select>
+  
+  <!-- Input condicional para "Otra" -->
+  <input 
+    *ngIf="showCustomInput"
+    type="text" 
+    class="w-full p-2.5 mt-2 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+    placeholder="Especificar vía de aplicación"
+    [(ngModel)]="applicationForm.viaApplication"
+    name="viaApplication"
+    (input)="onCustomViaInputChange($event)"
+    maxlength="50"
+    required>
+  
+  <!-- Mensajes de error -->
+  <p *ngIf="formSubmitted && !isViaApplicationValid()" class="mt-1 text-sm text-red-500">
+    Por favor seleccione o especifique la vía de aplicación
+  </p>
+</div>
+
+          <!-- Email con validación -->
+          <div class="form-group md:col-span-2">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="email">
+              <i class="far fa-envelope mr-1 text-blue-600"></i> Correo Electrónico <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="email" 
+              class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+              id="email" 
+              [(ngModel)]="applicationForm.email" 
+              name="email" 
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              #emailInput="ngModel"
+              placeholder="ejemplo@correo.com"
+              required />
+            <p *ngIf="formSubmitted && emailInput.invalid" class="mt-1 text-sm text-red-500">
+              Por favor ingrese un correo electrónico válido
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sección: Cantidades y Costos -->
+      <div class="mb-6">
+        <h3 class="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 pb-2 border-b border-blue-200 dark:border-blue-700">
+          Cantidades y Costos
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Cantidad -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="amount">
+              <i class="fas fa-vial mr-1 text-blue-600"></i> Cantidad de Dosis <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <input 
+                type="number" 
+                class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+                id="amount" 
+                [(ngModel)]="applicationForm.amount" 
+                name="amount" 
+                min="0" 
+                step="0.01"
+                placeholder="0.00"
+                required />
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <span class="text-gray-500 text-sm">ml</span>
+              </div>
+            </div>
+            <p *ngIf="formSubmitted && (!applicationForm.amount || applicationForm.amount <= 0)" class="mt-1 text-sm text-red-500">
+              Por favor ingrese una cantidad válida
+            </p>
+          </div>
+          
+          <!-- Costo - Con Sol Peruano (S/) -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="costApplication">
+              <i class="fas fa-money-bill mr-1 text-blue-600"></i> Costo por Dosis <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <span class="text-gray-500">S/</span>
+              </div>
+              <input 
+                type="number" 
+                class="w-full pl-8 p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+                id="costApplication" 
+                [(ngModel)]="applicationForm.costApplication" 
+                name="costApplication" 
+                min="0" 
+                step="0.01"
+                placeholder="0.00"
+                required />
+            </div>
+            <p *ngIf="formSubmitted && (!applicationForm.costApplication || applicationForm.costApplication <= 0)" class="mt-1 text-sm text-red-500">
+              Por favor ingrese un costo válido
+            </p>
+          </div>
+          
+          <!-- Cantidad de Gallinas -->
+          <div class="form-group">
+            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300" for="quantityBirds">
+              <i class="fas fa-feather mr-1 text-blue-600"></i> Cantidad de Aves <span class="text-red-500">*</span>
+            </label>
+            <input 
+              type="number" 
+              class="w-full p-2.5 border border-blue-300 dark:border-blue-700 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700" 
+              id="quantityBirds" 
+              [(ngModel)]="applicationForm.quantityBirds" 
+              name="quantityBirds" 
+              min="1" 
+              placeholder="0"
+              required />
+            <p *ngIf="formSubmitted && (!applicationForm.quantityBirds || applicationForm.quantityBirds <= 0)" class="mt-1 text-sm text-red-500">
+              Por favor ingrese la cantidad de aves
+            </p>
+          </div>
+        </div>
+        
+        <!-- Cálculo de Total con símbolo S/ -->
+        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-gray-700 dark:text-blue-200">Costo por dosis:</span>
+              <span class="font-semibold text-blue-600 dark:text-blue-300">
+                S/ {{ (applicationForm.costApplication || 0) | number:'1.2-2' }}
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-gray-700 dark:text-blue-200">Cantidad de aves:</span>
+              <span class="font-semibold text-blue-600 dark:text-blue-300">
+                {{ applicationForm.quantityBirds || 0 }}
+              </span>
+            </div>
+            <div class="flex justify-between items-center bg-blue-100 dark:bg-blue-800/50 p-2 rounded">
+              <span class="font-bold text-gray-800 dark:text-blue-100">Total estimado:</span>
+              <span class="text-lg font-bold text-blue-700 dark:text-blue-300">
+                S/ {{ calculateTotal(applicationForm.costApplication, applicationForm.quantityBirds) | number:'1.2-2' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex justify-end mt-6 space-x-3">
+        <button 
+          type="button" 
+          class="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 border border-gray-300"
+          (click)="closeModal()">
+          <i class="fas fa-times mr-1"></i> Cancelar
+        </button>
+        <button 
+          type="submit" 
+          class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center shadow-md">
+          <i class="fas fa-save mr-2"></i> {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Notificación de retroalimentación -->
+<div *ngIf="showFeedback" class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md z-50 animate-fadeIn">
+  <div class="flex">
+    <div class="py-1"><i class="fas fa-check-circle mr-2"></i></div>
+    <div>
+      <p>{{ feedbackMessage }}</p>
+    </div>
+    <div class="ml-auto pl-3">
+      <button type="button" class="inline-flex text-green-500 hover:text-green-700" (click)="showFeedback = false">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</div>
