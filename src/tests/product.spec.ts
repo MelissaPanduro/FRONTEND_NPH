@@ -13,7 +13,7 @@ test('Prueba de agregar producto desde modal', async ({ page }) => {
   await page.goto('http://localhost:4200/Modulo-Galpon/Productos', { timeout: 60000 });
 
   // 2. Esperar y hacer clic en "Agregar Producto"
-  const agregarProductoBtn = page.locator('button:has-text("Agregar Producto")');
+  const agregarProductoBtn = page.getByRole('button', { name: 'Agregar un nuevo producto' });
   await agregarProductoBtn.waitFor({ state: 'visible', timeout: 10000 });
   await agregarProductoBtn.click();
   logClick('Agregar Producto');
