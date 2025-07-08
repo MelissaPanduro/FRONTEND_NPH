@@ -19,19 +19,19 @@ test('Prueba de agregar producto desde modal', async ({ page }) => {
   logClick('Agregar Producto');
 
   // 3. Completar los campos del formulario en el modal
-  await page.getByLabel('Nombre Producto:').fill('Harina de Maíz');
+  await page.locator('input[name="type"]').fill('Harina de Maíz');
   logClick('Llenar Nombre Producto');
 
-  await page.getByLabel('Descripción:').fill('Producto natural molido');
+  await page.locator('input[name="description"]').fill('Producto natural molido');
   logClick('Llenar Descripción');
 
-  await page.getByLabel('Peso paq.(kg):').fill('10');
+  await page.locator('input[name="packageWeight"]').fill('10');
   logClick('Llenar Peso');
 
-  await page.getByLabel('Stock paq.:').fill('50');
+  await page.locator('input[name="stock"]').fill('50');
   logClick('Llenar Stock');
 
-  await page.getByLabel('Tipo de Producto:').selectOption('MP');
+  await page.locator('select[name="typeProduct"]').selectOption('MP');
   logClick('Seleccionar Tipo de Producto');
 
   // 4. Clic en "Guardar"
