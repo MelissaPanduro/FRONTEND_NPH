@@ -1,0 +1,216 @@
+w<header class="bg-white shadow-md py-4">
+  <div class="w-full px-4">
+    <h1 class="text-3xl font-extrabold text-blue-900 dark:text-blue-400 md:text-4xl">
+      <span class="bg-gradient-to-r from-sky-400 to-blue-600 bg-clip-text text-transparent">
+        CICLO DE VIDA
+      </span>
+    </h1>
+  </div>
+</header>
+
+<div class="container mx-auto my-6 p-4 bg-white shadow-md rounded-lg">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold">Lista de Ciclos</h2>
+    <button (click)="abrirModalCrear()"
+      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded flex items-center text-base">
+      <i class="fas fa-plus mr-2"></i> Agregar Ciclo
+    </button>
+  </div>
+  <div class="flex items-center mb-4">
+    <label class="mr-2 font-semibold">Buscar por Tipo de Ito:</label>
+    <input type="text" class="border p-2 rounded" [(ngModel)]="tipoBusqueda">
+    <button class="ml-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" (click)="buscarCicloPorTipo()">
+      Buscar
+    </button>
+  </div>
+
+  <!-- Switcher de Estado -->
+  <div class="flex items-center mb-4">
+    <span class="mr-2 font-semibold">Mostrar:</span>
+    <label class="relative inline-flex items-center cursor-pointer">
+      <input type="checkbox" class="sr-only peer" [(ngModel)]="statusActive" (change)="toggleStatus()">
+      <div
+        class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+      </div>
+      <span class="ml-3 text-sm font-medium text-gray-900">{{ statusFilter === 'A' ? 'Activos' : 'Inactivos' }}</span>
+    </label>
+  </div>
+
+  <div *ngIf="mostrarModalDetalle" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-xl font-bold mb-4">Detalles del Ciclo</h3>
+  
+      <p><strong>Tipo de Hito:</strong> {{ cicloDetalle?.typeIto }}</p>
+      <p><strong>Nombre:</strong> {{ cicloDetalle?.nameIto }}</p>
+      <p><strong>Tipo de Tiempo:</strong> {{ cicloDetalle?.typeTime }}</p>
+      <p><strong>Tiempo:</strong> {{ cicloDetalle?.times }}</p>
+      <p><strong>Llegada de Gallina:</strong> {{ cicloDetalle?.arrivalDate | date:'dd/MM/yyyy' }}</p>
+      <p><strong>Fecha en la que se debe aplicar:</strong> {{ cicloDetalle?.endDate| date:'dd/MM/yyyy' }}</p>
+      <p><strong>Estado:</strong> {{ cicloDetalle?.status }}</p>
+  
+      <button (click)="cerrarModalDetalle()" class="mt-4 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+        Cerrar
+      </button>
+    </div>
+  </div>
+  
+  <!-- Modal de edición -->
+  <div *ngIf="cicloSeleccionado" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-xl font-bold mb-4">Editar Ciclo</h3>
+
+      <label class="block mb-2">Galpón</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.henId">
+        <option value="" disabled selected>Selecciona un galpón</option>
+        <!-- Misma solución aplicada al otro select -->
+        <option *ngFor="let hen of hens" [ngValue]="hen.id">
+          {{ hen.name ? hen.name : 'Galpón ' + hen.id }}
+        </option>
+      </select>
+         
+
+      <label class="block mb-2">Tipo de Hito</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.typeIto">
+        <option value="Vacunas">Vacunas</option>
+        <option value="Alimentación">Alimentación</option>
+      </select>
+
+
+      <label class="block mb-2">Nombre del Hito</label>
+      <input type="text" class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.nameIto" placeholder="Selecciona un hito">
+      
+
+      <label class="block mb-2">Tipo de tiempo</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.typeTime">
+        <option value="Día">Día</option>
+        <option value="Semana">Semana</option>
+      </select>
+
+
+      <label class="block mb-2">Tiempo</label>
+      <input type="number" class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.times">
+
+      <label class="block mt-4 mb-2">Estado</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="cicloSeleccionado.status">
+        <option value="A">Activo</option>
+        <option value="I">Inactivo</option>
+      </select>
+
+      <div class="mt-4 flex justify-end space-x-2">
+        <button class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+          (click)="cicloSeleccionado = null">Cancelar</button>
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          (click)="guardarEdicion()">Guardar</button>
+      </div>
+    </div>
+  </div>
+  <!-- Modal de Crear Ciclo -->
+  <div *ngIf="mostrarModalCrear" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+      <h3 class="text-xl font-bold mb-4">Crear Ciclo</h3>
+
+<!-- 1. Solución para el modal de creación -->
+<label class="block mb-2">Galpón</label>
+<select class="w-full border p-2 rounded" [(ngModel)]="nuevoCiclo.henId">
+  <option value="" disabled selected>Selecciona un galpón</option>
+  <!-- Modificación clave: verificar que hen.name exista y está definido -->
+  <option *ngFor="let hen of hens" [ngValue]="hen.id">
+    {{ hen.name ? hen.name : 'Galpón ' + hen.id }}
+  </option>
+</select>
+      
+      <!-- Campo para Tipo de ITO -->
+      <label class="block mb-2">Tipo de HiTO</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="nuevoCiclo.typeIto">
+        <option value="Vacunas">Vacunas</option>
+        <option value="Alimentación">Alimentación</option>
+      </select>
+
+
+      <!-- Campo para Nombre de ITO -->
+      <label class="block mb-2">Nombre del HiTO</label>
+      <input type="text" class="w-full border p-2 rounded" [(ngModel)]="nuevoCiclo.nameIto">
+
+      <!-- Campo para Tipo de Tiempo -->
+      <label class="block mb-2">Tipo de Tiempo</label>
+      <select class="w-full border p-2 rounded" [(ngModel)]="nuevoCiclo.typeTime">
+        <option value="Día">Día</option>
+        <option value="Semana">Semana</option>
+      </select>
+
+
+      <!-- Campo para Tiempo -->
+      <label class="block mb-2">Tiempo</label>
+      <input type="number" class="w-full border p-2 rounded" [(ngModel)]="nuevoCiclo.times">
+
+
+      <!-- Botones para cancelar o guardar -->
+      <div class="mt-4 flex justify-end space-x-2">
+        <button class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
+          (click)="cerrarModalCrear()">Cancelar</button>
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          (click)="crearCiclo()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full border-separate border-spacing-y-2 text-base">
+      <thead>
+        <tr>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Tipo de HiTO</th>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Nombre de HiTO</th>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Tipo de Tiempo</th>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Tiempo</th>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Fecha de aplicación</th>
+          <th class="px-4 py-3 font-semibold text-blue-900 bg-blue-100">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ciclo of paginaCiclos" class="bg-gray-50 hover:bg-gray-100 text-center">
+          <td class="px-4 py-3">{{ ciclo.typeIto }}</td>
+          <td class="px-4 py-3">{{ ciclo.nameIto }}</td>
+          <td class="px-4 py-3">{{ ciclo.typeTime }}</td>
+          <td class="px-4 py-3">{{ ciclo.times }}</td>
+          <td class="px-4 py-3">{{ ciclo.endDate | date:'dd-MMM-yyyy' : 'es-ES' }}</td>
+          <td class="px-4 py-3 flex justify-center space-x-2">
+            <button class="text-blue-400 hover:text-blue-600 text-lg" (click)="abrirModalDetalle(ciclo)">
+              <i class="fas fa-eye"></i>
+            </button>
+            <ng-container *ngIf="ciclo.status === 'A'">
+              <button class="text-blue-500 hover:text-blue-700 text-lg" (click)="editarCiclo(ciclo)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button *ngIf="ciclo.id !== undefined" class="text-red-500 hover:text-red-700 text-lg"
+                (click)="eliminarCiclo(ciclo.id)">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="ciclo.status === 'I'">
+              <button *ngIf="ciclo.id !== undefined" class="text-green-500 hover:text-green-700 text-lg"
+                (click)="restaurarCiclo(ciclo.id)">
+                <i class="fas fa-undo"></i>
+              </button>
+            </ng-container>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+    <div class="flex justify-center mt-4 space-x-3 text-base">
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded disabled:opacity-50"
+        (click)="prevPage()" [disabled]="page === 1">
+        Previous
+      </button>
+
+      <span class="font-semibold text-gray-700">
+        Página {{ page }} de {{ totalPages }}
+      </span>
+
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded disabled:opacity-50"
+        (click)="nextPage()" [disabled]="page === totalPages">
+        Next
+      </button>
+    </div>
+  </div>

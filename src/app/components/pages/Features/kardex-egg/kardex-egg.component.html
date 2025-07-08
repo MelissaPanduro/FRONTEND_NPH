@@ -1,0 +1,381 @@
+<!-- Contenedor de Botones - Responsive design -->
+<div class="flex flex-col md:flex-row justify-between px-4 mt-6 space-y-4 md:space-y-0">
+    <!-- Botón Agregar Datos -->
+    <button class="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md wiggle-btn w-full md:w-auto" (click)="showModalForCreation()">
+        <i class="fas fa-plus-circle mr-2"></i> Agregar Datos
+    </button>
+
+    <!-- Botones Extras -->
+    <div class="flex flex-wrap gap-2 justify-center md:justify-end">
+        <button (click)="openCreateModal()" class="extra-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex-grow md:flex-grow-0">
+            <i class="fas fa-file-alt mr-2"></i> Crear Kardex
+        </button> 
+        <button (click)="generatePDF()" class="extra-btn bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex-grow md:flex-grow-0">
+            <i class="fas fa-file-pdf mr-2"></i> PDF
+        </button>
+        <button (click)="generateExcel()" class="extra-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex-grow md:flex-grow-0">
+            <i class="fas fa-file-excel mr-2"></i> XLS
+        </button>
+        <button class="extra-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex-grow md:flex-grow-0">
+            <i class="fas fa-file-csv mr-2"></i> CSV
+        </button>
+    </div>
+</div>
+
+<!-- Selector de Kardex y Stock Actual en la misma altura - Responsive -->
+<!-- Selector de Kardex con Stock Actual en la esquina derecha -->
+<div class="relative mt-6 px-4">
+    <!-- Selector de Kardex -->
+    <div class="flex flex-wrap items-center gap-2">
+        <label for="kardexSelect" class="font-bold text-lg">Seleccionar Kardex:</label>
+        <select id="kardexSelect" [(ngModel)]="selectedKardex" (change)="onKardexChange($event)" 
+            class="border border-gray-300 rounded-lg px-3 py-2 text-lg focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-auto min-w-[150px]">
+            <option *ngFor="let kardex of filteredKardexList" [value]="kardex.id">{{ kardex.name }}</option>
+        </select>
+
+        <!-- Botones circulares -->
+        <div class="flex space-x-2">
+            <button *ngIf="selectedKardexData" (click)="openEditModal(selectedKardexData!)"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition shadow-md">
+                <i class="fas fa-pencil-alt text-gray-700"></i>
+            </button>
+
+            <button *ngIf="selectedKardexData" (click)="toggleCalendarModal()" 
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition shadow-md">
+                <i class="fas fa-calendar-alt text-gray-700"></i>
+            </button>
+        </div>
+        
+        <!-- Etiqueta para mostrar el filtro activo -->
+        <div *ngIf="selectedMonth && selectedYear" class="flex items-center space-x-2 bg-blue-100 px-3 py-1 rounded-lg">
+            <span class="text-sm text-blue-800">Mostrando: {{ getMonthName(selectedMonth) }} {{ selectedYear }}</span>
+            <button (click)="clearMonthFilter()" class="text-blue-600 hover:text-blue-800">
+                <i class="fas fa-times-circle"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stock Actual (esquina derecha) -->
+    <div class="absolute top-0 right-4 sm:right-6">
+        <div class="flex items-center bg-blue-500 text-white rounded-md shadow px-2 py-1 text-sm">
+            <i class="fas fa-cubes mr-1"></i>
+            <span class="font-bold">Stock: {{ currentStock }}</span>
+        </div>
+    </div>
+
+    <app-creations
+        [isOpen]="isModalOpen"
+        [isEditMode]="isEditMode"
+        [typeKardex]="selectedTypeKardex"
+        (close)="closeModal()"
+        (kardexUpdated)="onKardexUpdated($event)">
+    </app-creations>
+</div>
+
+<!-- Detalle de Kardex - Responsive -->
+<div class="mt-6 px-4 overflow-x-auto">
+    <div class="min-w-full bg-white border border-gray-300 shadow-md rounded-lg overflow-hidden">
+        <!-- Título del Kardex -->
+        <div class="bg-blue-500 text-white py-3 text-xl font-bold text-center">
+            {{ selectedKardexData?.name || 'Kardex de Venta' }}
+        </div>
+        
+        <!-- Información del producto - Diseño responsive para móviles -->
+        <div class="grid grid-cols-1 md:grid-cols-3">
+            <!-- Primera fila de información -->
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold">Producto</div>
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:block hidden">Ubicación</div>
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:block hidden">Proveedor</div>
+
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border">{{ getProductName(selectedKardexData.productId) }}</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:block hidden">{{ getShedName(selectedKardexData.shedId) }}</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:block hidden">{{ getSupplierName(selectedKardexData.supplierId) }}</div>
+
+            <!-- Campos ocultos en desktop, visibles en móvil -->
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:hidden">Ubicación</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:hidden">{{ getShedName(selectedKardexData.shedId) }}</div>
+            
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:hidden">Proveedor</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:hidden">{{ getSupplierName(selectedKardexData.supplierId) }}</div>
+
+            <!-- Segunda fila de información -->
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold">Cantidad Máxima</div>
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:block hidden">Cantidad Mínima</div>
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:block hidden">Descripción</div>
+
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border">{{ selectedKardexData.maximumAmount }}</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:block hidden">{{ selectedKardexData.minimumQuantity }}</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:block hidden">{{ selectedKardexData.description }}</div>
+            
+            <!-- Campos ocultos en desktop, visibles en móvil -->
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:hidden">Cantidad Mínima</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:hidden">{{ selectedKardexData.minimumQuantity }}</div>
+            
+            <div class="bg-blue-300 text-black text-center py-2 px-4 border font-semibold md:hidden">Descripción</div>
+            <div *ngIf="selectedKardexData" class="text-center py-2 px-4 border md:hidden">{{ selectedKardexData.description }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Movimientos con Paginador - Totalmente responsive -->
+<div class="mt-6 px-4">
+    <!-- Versión móvil - Tarjetas -->
+    <div class="block md:hidden">
+        <div *ngFor="let movement of filteredMovements | slice:(currentPage-1)*itemsPerPage:(currentPage)*itemsPerPage; let i = index" 
+             class="mb-4 border rounded-lg shadow-md overflow-hidden"
+             [ngClass]="{
+                'bg-green-200': movement.cantidadEntrada > 0 && movement.concept !== 'Merma' && movement.concept !== 'Consumo Interno', 
+                'bg-red-200': (movement.cantidadSalida > 0 && movement.concept !== 'Merma' && movement.concept !== 'Consumo Interno') || movement.concept === 'Venta',
+                'bg-orange-100': movement.concept === 'Merma' || movement.concept === 'Consumo Interno'
+             }">
+            <!-- Cabecera de la tarjeta -->
+            <div class="bg-blue-500 text-white py-2 px-3 flex justify-between items-center">
+                <div>
+                    <span class="font-bold">#{{ i + 1 + (currentPage - 1) * itemsPerPage }}</span> - 
+                    {{ movement.issueDate | date: 'dd/MMM/yyyy' : 'es' }}
+                </div>
+                <div class="text-right">
+                    <span class="font-bold">{{ movement.concept }}</span>
+                </div>
+            </div>
+            
+            <!-- Detalle y documentos -->
+            <div class="p-3 border-b">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <span class="font-semibold">Documento:</span> 
+                        {{ movement.documentType }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Número:</span> 
+                        {{ movement.documentNumber }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Entradas -->
+            <div *ngIf="movement.cantidadEntrada > 0" class="p-3 border-b bg-green-50">
+                <div class="font-semibold text-green-700 mb-1">Entradas:</div>
+                <div class="grid grid-cols-3 gap-1 text-sm">
+                    <div>
+                        <span class="font-semibold">Cantidad:</span><br>
+                        {{ movement.cantidadEntrada }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Costo Unit:</span><br>
+                        {{ movement.costoUnitarioEntrada }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Total:</span><br>
+                        {{ movement.valorTotalEntrada }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Salidas -->
+            <div *ngIf="movement.cantidadSalida > 0" class="p-3 border-b bg-red-50">
+                <div class="font-semibold text-red-700 mb-1">Salidas:</div>
+                <div class="grid grid-cols-3 gap-1 text-sm">
+                    <div>
+                        <span class="font-semibold">Cantidad:</span><br>
+                        {{ movement.cantidadSalida }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Costo Unit:</span><br>
+                        {{ movement.costoUnitarioSalida }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Total:</span><br>
+                        {{ movement.valorTotalSalida }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Saldo -->
+            <div class="p-3 border-b bg-blue-50">
+                <div class="font-semibold text-blue-700 mb-1">Saldo Actual:</div>
+                <div class="grid grid-cols-3 gap-1 text-sm">
+                    <div>
+                        <span class="font-semibold">Cantidad:</span><br>
+                        {{ movement.cantidadSaldo }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Costo Unit:</span><br>
+                        {{ movement.costoUnitarioSaldo }}
+                    </div>
+                    <div>
+                        <span class="font-semibold">Total:</span><br>
+                        {{ movement.valorTotalSaldo }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observación -->
+            <div *ngIf="movement.observation" class="p-3 border-b">
+                <div class="font-semibold">Observación:</div>
+                <div class="text-sm">{{ movement.observation }}</div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="p-3 flex justify-end space-x-4">
+                <button 
+                    class="flex items-center text-blue-500 hover:text-blue-700" 
+                    (click)="showModalForEditing(movement)">
+                    <i class="fas fa-edit mr-1"></i> Editar
+                </button>
+                <button 
+                    class="flex items-center text-red-500 hover:text-red-700" 
+                    (click)="deleteKardex(movement.kardexId)">
+                    <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Versión desktop - Tabla -->
+    <div class="hidden md:block overflow-x-auto rounded-lg shadow-md">
+        <table class="min-w-full bg-white border border-gray-300">
+            <thead class="bg-blue-500 text-white">
+                <tr class="bg-blue-300 text-black text-center">
+                    <th colspan="5" class="py-2 px-4 text-sm">Detalle</th>
+                    <th colspan="3" class="py-2 px-4 text-sm">Entradas</th>
+                    <th colspan="3" class="py-2 px-4 text-sm">Salidas</th>
+                    <th colspan="3" class="py-2 px-4 text-sm">Saldo</th>
+                    <th class="py-2 px-4 text-sm">Observación</th>
+                    <th class="py-2 px-4 text-sm">Opciones</th>
+                </tr>
+                <tr class="bg-blue-200 text-black text-center">
+                    <th class="py-2 px-4 text-sm">#</th>
+                    <th class="py-2 px-4 text-sm" style="min-width: 80px; max-width: 100px;">Fecha</th>
+                    <th class="py-2 px-4 text-sm">CONCEPTO</th>
+                    <th class="py-2 px-4 text-sm">Doc</th>
+                    <th class="py-2 px-4 text-sm">Doc N°</th>
+                    <th class="py-2 px-4 text-sm">Entrada</th>
+                    <th class="py-2 px-4 text-sm">Costo Unitario</th>
+                    <th class="py-2 px-4 text-sm">Total</th>
+                    <th class="py-2 px-4 text-sm">Salida</th>
+                    <th class="py-2 px-4 text-sm">Costo Unitario</th>
+                    <th class="py-2 px-4 text-sm">Total</th>
+                    <th class="py-2 px-4 text-sm">Saldo</th>
+                    <th class="py-2 px-4 text-sm">Costo Unitario</th>
+                    <th class="py-2 px-4 text-sm">Total</th>
+                    <th class="py-2 px-4 text-sm">Contexto</th>
+                    <th class="py-2 px-4 text-sm">Métodos</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let movement of filteredMovements | slice:(currentPage-1)*itemsPerPage:(currentPage)*itemsPerPage; let i = index" 
+                    class="text-center text-sm whitespace-nowrap"
+                    [ngClass]="{
+                        'bg-green-200': movement.cantidadEntrada > 0 && movement.concept !== 'Merma' && movement.concept !== 'Consumo Interno', 
+                        'bg-red-200': (movement.cantidadSalida > 0 && movement.concept !== 'Merma' && movement.concept !== 'Consumo Interno') || movement.concept === 'Venta',
+                        'bg-orange-100': movement.concept === 'Merma' || movement.concept === 'Consumo Interno'
+                    }">
+                    <td class="py-2 px-4 border">{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
+                    <td class="py-1 px-2 border text-xs">{{ movement.issueDate | date: 'dd-MMM-yyyy' : 'es' }}</td>
+                    <td class="py-2 px-4 border">{{ movement.concept }}</td>
+                    <td class="py-2 px-4 border">{{ movement.documentType }}</td>
+                    <td class="py-2 px-4 border">{{ movement.documentNumber }}</td>
+                    <td class="py-2 px-4 border">{{ movement.cantidadEntrada }}</td>
+                    <td class="py-2 px-4 border">{{ movement.costoUnitarioEntrada }}</td>
+                    <td class="py-2 px-4 border">{{ movement.valorTotalEntrada }}</td>
+                    <td class="py-2 px-4 border">{{ movement.cantidadSalida }}</td>
+                    <td class="py-2 px-4 border">{{ movement.costoUnitarioSalida }}</td>
+                    <td class="py-2 px-4 border">{{ movement.valorTotalSalida }}</td>
+                    <td class="py-2 px-4 border">{{ movement.cantidadSaldo }}</td>
+                    <td class="py-2 px-4 border">{{ movement.costoUnitarioSaldo }}</td>
+                    <td class="py-2 px-4 border">{{ movement.valorTotalSaldo }}</td>
+                    <td class="py-2 px-4 border">{{ movement.observation }}</td>
+                    <td class="py-2 px-4 border text-center">
+                        <div class="flex justify-center space-x-2">
+                            <button 
+                                class="text-blue-500 hover:text-blue-700" 
+                                (click)="showModalForEditing(movement)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <button 
+                                class="text-red-500 hover:text-red-700" 
+                                (click)="deleteKardex(movement.kardexId)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginador Responsive -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
+        <button class="paginador-btn px-4 py-2 bg-blue-500 text-white rounded-md w-full sm:w-auto" 
+                (click)="previousPage()" 
+                [disabled]="currentPage === 1"
+                [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === 1}">
+            <i class="fas fa-chevron-left mr-2"></i> Anterior
+        </button>
+        <span class="text-center">Página {{ currentPage }} de {{ totalPages }}</span>
+        <button class="paginador-btn px-4 py-2 bg-blue-500 text-white rounded-md w-full sm:w-auto" 
+                (click)="nextPage()" 
+                [disabled]="currentPage === totalPages"
+                [ngClass]="{'opacity-50 cursor-not-allowed': currentPage === totalPages}">
+            Siguiente <i class="fas fa-chevron-right ml-2"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Modal del calendario - Mejorado para responsive -->
+<div *ngIf="calendarModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn p-4">
+    <div class="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-xs sm:max-w-sm md:max-w-md transform transition-all duration-300">
+      
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold">Seleccionar Mes</h3>
+        <button (click)="toggleCalendarModal()" class="text-gray-500 hover:text-gray-700 transition-all duration-200">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <!-- Año Selector -->
+      <div class="mb-4">
+        <label for="yearSelect" class="block text-sm font-medium text-gray-700 mb-1">Año:</label>
+        <select id="yearSelect" [(ngModel)]="tempYear" class="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300">
+          <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+        </select>
+      </div>
+      
+      <!-- Meses -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        <button *ngFor="let month of months; let i = index" 
+          (click)="selectMonth(i + 1)" 
+          class="p-2 rounded-md text-center transform transition-all duration-200"
+          [ngClass]="{
+            'bg-blue-500 text-white shadow-lg hover:scale-105': tempMonth === i + 1, 
+            'bg-gray-100 hover:bg-gray-200 hover:scale-105': tempMonth !== i + 1
+          }">
+          {{ month }}
+        </button>
+      </div>
+      
+      <!-- Botones de acción -->
+      <div class="flex flex-col sm:flex-row justify-between gap-2">
+        <button (click)="clearMonthFilter()" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transform hover:scale-105 transition-all duration-200 w-full">
+          <i class="fas fa-undo mr-2"></i> Ver todo
+        </button>
+        <button (click)="applyMonthFilter()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transform hover:scale-105 transition-all duration-200 w-full">
+          <i class="fas fa-check mr-2"></i> Aplicar
+        </button>
+      </div>
+      
+    </div>
+</div>
+
+<!-- Modal de Kardex -->
+<app-modal-kardex 
+  *ngIf="modalVisible"
+  [isEdit]="editMode"
+  [movementKardex]="currentMovementKardex"
+  [fixedKardexType]="true"
+  (closeModal)="hideModal()"
+  (movementUpdated)="onMovementUpdated($event)">
+</app-modal-kardex>

@@ -1,0 +1,37 @@
+name: Validate Frontend Code Quality | Test Playwright
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 📂 Set up Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🛠 Run TypeScript Compiler (Verifica errores)
+        run: npx tsc --noEmit || exit 1
+
+      - name: 📡 Run Build Process (Verifica compilación)
+        run: npm run build -- --configuration=production || exit 1
+
+      - name: 🚀 Levantar servidor local
+        run: npm run start &
+
+      - name: ⏱ Esperar que el servidor esté disponible
+        run: sleep 10
+
+      - name: 🎭 Run Playwright tests
+        run: npx playwright install --with-deps && npx playwright test src/tests

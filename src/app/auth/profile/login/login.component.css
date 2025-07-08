@@ -1,0 +1,112 @@
+/* login.component.css */
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+.animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 10s ease infinite;
+    height: 100vh; /* Viewport height */
+    height: calc(var(--vh, 1vh) * 100); /* Custom viewport height */
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Estilo para el efecto de vidrio (glassmorphism) */
+.backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+    .animate-float {
+        animation-duration: 4s; /* Faster animation on mobile */
+    }
+    
+    .backdrop-blur-lg {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+}
+
+/* Asegurar que las animaciones funcionen en todos los navegadores */
+@-webkit-keyframes float {
+    0% { -webkit-transform: translateY(0px) rotate(0deg); }
+    50% { -webkit-transform: translateY(-10px) rotate(2deg); }
+    100% { -webkit-transform: translateY(0px) rotate(0deg); }
+}
+
+@-webkit-keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@-webkit-keyframes fadeIn {
+    from { opacity: 0; -webkit-transform: translateY(10px); }
+    to { opacity: 1; -webkit-transform: translateY(0); }
+}
+
+/* Fix for iOS Safari backdrop-filter bug */
+@supports not (backdrop-filter: blur(16px)) {
+    .backdrop-blur-lg {
+        background-color: rgba(15, 23, 42, 0.85); /* Darker background as fallback */
+    }
+}
+
+/* Touch-friendly inputs for mobile */
+@media (max-width: 640px) {
+    input, button {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+}
+
+/* Fix for mobile viewport issues */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* Mobile-specific fixes */
+@media (max-width: 640px) {
+    .min-h-screen {
+        height: 100vh; /* Use viewport height */
+        height: -webkit-fill-available; /* iOS Safari */
+        height: fill-available;
+        overflow-y: auto; /* Enable scrolling if needed */
+        position: fixed;
+        inset: 0;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Fix for content on small screens */
+    .min-h-screen > div {
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+}

@@ -1,0 +1,154 @@
+<!-- Overlay para móvil cuando el menú está abierto -->
+<div *ngIf="isSidebarOpen" 
+     (click)="closeSidebar()" 
+     class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden transition-opacity"></div>
+
+<!-- Sidebar -->
+<aside [ngClass]="{'translate-x-0': isSidebarOpen, '-translate-x-full': !isSidebarOpen}" 
+      class="fixed top-0 left-0 z-40 h-screen w-64 lg:w-64 flex flex-col bg-gray-900 border-r border-gray-700 shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0">
+
+  <!-- Encabezado -->
+  <div class="p-4 md:p-7 border-b border-gray-700 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <img src="https://i.ibb.co/JqmVCv1/logo.png" alt="Logo" class="h-7 md:h-8 w-auto">
+      <h1 class="text-lg md:text-xl font-bold text-white">
+        Modulo<span class="text-blue-400">Galpon</span>
+      </h1>
+    </div>
+    <!-- Botón cerrar para móvil -->
+    <button (click)="closeSidebar()" class="lg:hidden text-gray-400 hover:text-white">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Perfil de Usuario -->
+  <div class="p-4 border-b border-gray-700">
+    <p class="text-sm text-gray-400 mb-2">Bienvenido de nuevo,</p>
+    <div class="flex items-center space-x-3">
+      <img src="https://i.ibb.co/t8xY2mD/IMG-20231219-201015.jpg" alt="User Avatar"
+        class="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-blue-400">
+      <div>
+        <p class="text-sm font-medium text-white">Frank Gallo</p>
+        <p class="text-xs text-gray-400">Administrador</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menú de navegación con scroll -->
+  <div class="flex-1 overflow-y-auto px-3 py-4 space-y-2">
+    <!-- Menú principal -->
+    <ng-container *ngFor="let item of menuItems; let i = index">
+      <!-- Dropdown con submenús -->
+      <div *ngIf="item.children && item.children.length; else singleItem">
+        <div
+          class="flex justify-between items-center px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-md cursor-pointer transition"
+          (click)="toggleDropdown(i)">
+          <div class="flex items-center space-x-2">
+            <i class="fa fa-{{ item.icon }} text-gray-300"></i>
+            <span class="font-medium text-white text-sm">{{ item.title }}</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            class="w-4 h-4 text-gray-300 transition-transform duration-200" [class.rotate-180]="dropdownIndex === i">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        <!-- Submenú -->
+        <div *ngIf="dropdownIndex === i" class="pl-4 mt-1 space-y-1">
+          <ng-container *ngFor="let child of item.children; let j = index">
+            <ng-template #childItem>
+              <a [routerLink]="child.path" routerLinkActive="bg-blue-800"
+                class="flex items-center px-3 py-2 text-xs md:text-sm rounded-md text-white hover:bg-gray-600 transition">
+                <i *ngIf="child.icon" class="fa fa-{{ child.icon }} mr-2 text-gray-300 w-4"></i>
+                {{ child.title }}
+              </a>
+            </ng-template>
+            <div *ngIf="child.children && child.children.length; else childItem">
+              <div
+                class="flex justify-between items-center px-3 py-2 hover:bg-gray-600 rounded-md cursor-pointer transition"
+                (click)="toggleSubDropdown(i, j)">
+                <div class="flex items-center space-x-2">
+                  <i *ngIf="child.icon" class="fa fa-{{ child.icon }} text-gray-300 w-4"></i>
+                  <span class="text-xs md:text-sm font-medium text-white">
+                    {{ child.title }}
+                  </span>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                  class="w-3 h-3 md:w-4 md:h-4 text-gray-300 transition-transform duration-200"
+                  [class.rotate-180]="subDropdownIndex.get(i) === j">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+
+              <!-- Sub-submenú -->
+              <div *ngIf="subDropdownIndex.get(i) === j" class="pl-4 mt-1 space-y-1">
+                <ng-container *ngFor="let grandChild of child.children; let k = index">
+                  <div *ngIf="grandChild.children && grandChild.children.length; else grandChildItem">
+                    <div
+                      class="flex justify-between items-center px-3 py-2 hover:bg-gray-600 rounded-md cursor-pointer transition"
+                      (click)="toggleGrandSubDropdown(i, j, k)">
+                      <div class="flex items-center space-x-2">
+                        <i *ngIf="grandChild.icon" class="fa fa-{{ grandChild.icon }} text-gray-300 w-4"></i>
+                        <span class="text-xs md:text-sm font-medium text-white">
+                          {{ grandChild.title }}
+                        </span>
+                      </div>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-3 h-3 md:w-4 md:h-4 text-gray-300 transition-transform duration-200"
+                        [class.rotate-180]="grandSubDropdownIndex.get(i)?.get(j) === k">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+
+                    <!-- Sub-sub-submenú -->
+                    <div *ngIf="grandSubDropdownIndex.get(i)?.get(j) === k" class="pl-4 mt-1 space-y-1">
+                      <a *ngFor="let greatGrandChild of grandChild.children" [routerLink]="greatGrandChild.path"
+                        routerLinkActive="bg-blue-800"
+                        class="flex items-center px-3 py-1.5 text-xs rounded-md text-white hover:bg-gray-600 transition">
+                        <i *ngIf="greatGrandChild.icon" class="fa fa-{{ greatGrandChild.icon }} mr-2 text-gray-300 w-4"></i>
+                        {{ greatGrandChild.title }}
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Sub-submenú sin hijos -->
+                  <ng-template #grandChildItem>
+                    <a [routerLink]="grandChild.path" routerLinkActive="bg-blue-800"
+                      class="flex items-center px-3 py-1.5 text-xs md:text-sm rounded-md text-white hover:bg-gray-600 transition">
+                      <i *ngIf="grandChild.icon" class="fa fa-{{ grandChild.icon }} mr-2 text-gray-300 w-4"></i>
+                      {{ grandChild.title }}
+                    </a>
+                  </ng-template>
+                </ng-container>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Ítems sin hijos -->
+      <ng-template #singleItem>
+        <a [routerLink]="item.path" routerLinkActive="bg-blue-800"
+          class="flex items-center px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition text-sm text-white">
+          <i *ngIf="item.icon" class="fa fa-{{ item.icon }} mr-2 text-gray-300"></i>
+          {{ item.title }}
+        </a>
+      </ng-template>
+    </ng-container>
+  </div>
+
+  <!-- Pie de página -->
+  <div class="p-4 border-t border-gray-700 mt-auto">
+    <button (click)="logout()" class="w-full flex items-center justify-center space-x-2 py-2 rounded-lg
+                 bg-gray-800 hover:bg-gray-700
+                 text-white text-sm font-medium transition-all">
+      <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H5a3 3 0 01-3-3V7a3 3 0 013-3h5a3 3 0 013 3v1" />
+      </svg>
+      <span>Cerrar sesión</span>
+    </button>
+  </div>
+</aside>

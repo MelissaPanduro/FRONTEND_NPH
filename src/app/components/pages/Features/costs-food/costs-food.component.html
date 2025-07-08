@@ -1,0 +1,271 @@
+<!-- Encabezado -->
+<header class="bg-white shadow-md py-4">
+    <div class="w-full px-4">
+        <h1 class="text-3xl font-extrabold text-blue-900 dark:text-blue-400 md:text-4xl">
+            <span class="bg-gradient-to-r from-sky-400 to-blue-600 bg-clip-text text-transparent">
+                💰 Costo de alimentos
+            </span>
+        </h1>
+    </div>
+</header>
+
+<!-- Card 1 : Subtitulo, Boton agregar, Filtro de busqueda y boton de descarga -->
+
+<div class="container mx-auto my-6 p-4 bg-white shadow-md rounded-lg">
+
+    <!--Subtitulo y Boton agregar -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Registro de Costo de Alimentos</h2>
+        <button *ngIf="!showInactive"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded flex items-center text-base"
+            (click)="openModal()">
+            <i class="fas fa-plus mr-2"></i>Agregar Costo
+        </button>
+    </div>
+    <!-- Filtro de busqueda -->
+    <div *ngIf="!showInactive" class="flex justify-between items-center mb-4">
+        <div class="flex items-center">
+            <label for="costWeekNumberFilter" class="font-semibold mr-2">Buscar por semana:</label>
+            <input id="costWeekNumberFilter" type="text" class="border rounded p-2" [(ngModel)]="costWeekNumberFilter"
+                placeholder="Escribe el numero de semana" />
+            <button class="ml-2 bg-blue-500 text-white font-bold py-2 px-4 rounded" (click)="filterByWeekNumber()">
+                Buscar
+            </button>
+        </div>
+        <!-- Boton de descargas -->
+        <div class="relative">
+            <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded" (click)="toggleDescarga()">
+                Descargar <i class="fas fa-download ml-2"></i>
+            </button>
+            <div class="absolute right-0 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+                [ngClass]="{ 'hidden': !descargaOpen }">
+                <ul>
+                    <li>
+                        <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                            (click)="exportToPDF(); toggleDescarga()">PDF</button>
+                    </li>
+                    <li>
+                        <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                            (click)="exportToExcel(); toggleDescarga()">Excel</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card 2 : Switcher de estado y tabla de datos -->
+<div class="container mx-auto my-6 p-4 bg-white shadow-md rounded-lg">
+    <!-- Switcher de Estado -->
+    <div class="flex items-center mb-4">
+        <span class="mr-2 font-semibold">Mostrar:</span>
+        <label class="relative inline-flex items-center cursor-pointer" for="toggleInactive">
+            <input type="checkbox" class="sr-only peer" id="toggleInactive" (change)="toggleCostList()"
+                [checked]="!showInactive">
+            <div
+                class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+            </div>
+            <span class="ml-3 text-sm font-medium text-gray-900">
+                {{ showInactive ? 'Costo de Alimentos Inactivos' : 'Costo de Alimentos Activos' }}
+            </span>
+        </label>
+    </div>
+
+    <!-- Tabla de datos -->
+    <div class="overflow-auto">
+        <table class="min-w-full text-center border-separate" style="border-spacing: 0 10px;">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Semana</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Tipo</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Cantidad (gr)</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Total (Kg)</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Costo Total</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Fecha Inicial</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Fecha Final</th>
+                    <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100 rounded-tr-lg">Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Iterar sobre la lista de alimentos -->
+                <tr *ngFor="let cost of getTableData()">
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.weekNumber}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.foodType}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.gramsPerChicken}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.totalKg}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.totalCost}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.startDate | date:'dd-MMMM-yyyy'}}</td>
+                    <td class="px-6 py-4 bg-gray-100">{{ cost.endDate | date:'dd-MMMM-yyyy'}}</td>
+                    <td class="px-6 py-4 bg-gray-100">
+
+                        <!--Botón de restaurar para registros inactivos -->
+                        <button *ngIf="showInactive" class="btn btn-sm" data-bs-toggle="tooltip"
+                            (click)="openModalRestore(cost.idFoodCosts)" title="Restaurar">
+                            <img src="https://img.icons8.com/?size=100&id=50827&format=png&color=40C057" alt="Restaurar"
+                                style="width: 20px; height: 20px;">
+                        </button>
+
+                        <ng-container *ngIf="!showInactive">
+                            <button class="btn btn-sm mr-2" data-bs-toggle="modal" data-bs-target="#editEmployeeModal"
+                                (click)="DatosCost(cost)">
+                                <img src="https://img.icons8.com/?size=100&id=H5dKJanZkZNk&format=png&color=228BE6"
+                                    alt="Editar" style="width: 25px; height: 25px;">
+                            </button>
+                            <button class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top"
+                                (click)="openModalDelete(cost.idFoodCosts)" title="Eliminar">
+                                <img src="https://img.icons8.com/?size=100&id=FgOBVsURv5ar&format=png&color=FA5252"
+                                    alt="Eliminar" style="width: 25px; height: 25px;">
+                            </button>
+                        </ng-container>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginador -->
+    <div class="flex justify-center mt-4 space-x-2">
+        <button class="px-3 py-2 bg-gray-300 rounded-md text-sm font-semibold hover:bg-gray-400 disabled:opacity-50"
+            [disabled]="currentPage === 1" (click)="cambiarPagina(currentPage - 1)">
+            Anterior
+        </button>
+
+        <button *ngFor="let page of getPages()" class="px-3 py-2 rounded-md text-sm font-semibold"
+            [ngClass]="{'bg-blue-500 text-white': currentPage === page, 'bg-gray-200 hover:bg-gray-300': currentPage !== page}"
+            (click)="cambiarPagina(page)">
+            {{ page }}
+        </button>
+
+        <button class="px-3 py-2 bg-gray-300 rounded-md text-sm font-semibold hover:bg-gray-400 disabled:opacity-50"
+            [disabled]="currentPage === getPages().length" (click)="cambiarPagina(currentPage + 1)">
+            Siguiente
+        </button>
+    </div>
+</div>
+
+<!-- Modal para insertar un nuevo costo de alimento -->
+<div *ngIf="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+        <h2 class="text-xl font-bold mb-4">Agregar Costo de Alimento</h2>
+        <form (ngSubmit)="addCost()">
+            <div class="mb-4">
+                <label for="weekNumber" class="block text-sm font-medium text-gray-700">Semana</label>
+                <input type="text" id="weekNumber" [(ngModel)]="newCostFood.weekNumber" name="weekNumber"
+                    class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+            </div>
+            <div class="mb-4">
+                <label for="foodType" class="block text-sm font-medium text-gray-700">Tipo de Alimento</label>
+                <select id="foodType" [(ngModel)]="newCostFood.foodType" name="foodType"
+                    class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <option value="" disabled selected>Selecciona un alimento</option>
+                    <option *ngFor="let food of activeFoods" [value]="food.foodType">{{ food.foodType }}</option>
+                </select>
+            </div>
+            <div class="mb-4 flex space-x-4">
+                <div class="flex-1">
+                    <label for="gramsPerChicken" class="block text-sm font-medium text-gray-700">gr/gallina</label>
+                    <input type="text" id="gramsPerChicken" [(ngModel)]="newCostFood.gramsPerChicken"
+                        name="gramsPerChicken" class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <p class="text-red-500 text-sm mt-1"
+                        *ngIf="newCostFood.gramsPerChicken && !validateGrGallina(newCostFood.gramsPerChicken)">
+                        Ingresa la cantidad de alimento.
+                    </p>
+                </div>
+                <div class="flex-1">
+                    <label for="unitPrice" class="block text-sm font-medium text-gray-700">Costo x saco</label>
+                    <input type="text" id="unitPrice" [(ngModel)]="newCostFood.unitPrice" name="unitPrice"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <p class="text-red-500 text-sm mt-1"
+                        *ngIf="newCostFood.unitPrice && !validateUnitPrice(newCostFood.unitPrice)">
+                        Ingresa el precio del saco.
+                    </p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+                    (click)="closeModal()">Cancelar</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Agregar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para editar un nuevo costo de alimento -->
+<div *ngIf="isModalEdit" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+        <h2 class="text-xl font-bold mb-4">Editar Costo de Alimento</h2>
+        <form (ngSubmit)="updateCosto()">
+            <div class="mb-4">
+                <label for="weekNumber" class="block text-sm font-medium text-gray-700">Semana</label>
+                <input type="text" id="weekNumber" [(ngModel)]="costToEdit.weekNumber" name="weekNumber"
+                    class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+            </div>
+            <div class="mb-4">
+                <label for="foodType" class="block text-sm font-medium text-gray-700">Tipo de Alimento</label>
+                <select id="foodType" [(ngModel)]="costToEdit.foodType" name="foodType"
+                    class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <option value="" disabled>Selecciona un alimento</option>
+                    <option *ngFor="let food of activeFoods" [value]="food.foodType">{{ food.foodType }}</option>
+                </select>
+            </div>
+            <div class="mb-4 flex space-x-4">
+                <div class="flex-1">
+                    <label for="gramsChicken" class="block text-sm font-medium text-gray-700">Cantidad(gr)</label>
+                    <input type="text" id="gramsChicken" [(ngModel)]="costToEdit.gramsPerChicken" name="gramsChicken"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <p class="text-red-500 text-sm mt-1"
+                        *ngIf="costToEdit.gramsPerChicken && !validateGrGallina(costToEdit.gramsPerChicken)">
+                        Ingresa la cantidad de alimento.
+                    </p>
+                </div>
+                <div class="flex-1">
+                    <label for="unitPrice" class="block text-sm font-medium text-gray-700">Costo x saco</label>
+                    <input type="text" id="unitPrice" [(ngModel)]="costToEdit.unitPrice" name="unitPrice"
+                        class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+                    <p class="text-red-500 text-sm mt-1"
+                        *ngIf="costToEdit.unitPrice && !validateUnitPrice(costToEdit.unitPrice)">
+                        Ingresa el precio del saco.
+                    </p>
+                </div>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+                    (click)="closeModal()">Cancelar</button>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para desactivar un costo de alimento -->
+<div *ngIf="isModalDelete" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Desactivar Registro</h2>
+        <p class="text-center text-gray-600 mb-4">¿Estás seguro que quieres desactivar este registro?</p>
+        <div class="flex justify-center space-x-2">
+            <button type="button"
+                class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-200"
+                (click)="closeModal()">Cancelar</button>
+            <button type="button"
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
+                (click)="deleteCost()">Aceptar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para restaurar un costo de alimento -->
+<div *ngIf="isModalRestore" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Restaurar Registro</h2>
+        <p class="text-center text-gray-600 mb-4">¿Estás seguro que quieres restaurar este registro?</p>
+        <div class="flex justify-center space-x-2">
+            <button type="button"
+                class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-200"
+                (click)="closeModal()">Cancelar</button>
+            <button type="button"
+                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
+                (click)="restoreCost()">Aceptar</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,223 @@
+<!-- Modal overlay - Mejorada responsividad -->
+<div *ngIf="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-1 sm:p-4 md:p-6 overflow-y-auto">
+  <!-- Modal container - Ajustado tamaños y padding -->
+  <div class="relative bg-white rounded-lg shadow-lg w-full max-w-3xl overflow-hidden max-h-[90vh] sm:max-h-[95vh] flex flex-col my-2 sm:my-0">
+    <!-- Header - Responsive text sizes -->
+    <div class="bg-yellow-100 py-2 sm:py-3 px-3 sm:px-6 border-b border-gray-300 flex-shrink-0">
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm sm:text-lg md:text-xl font-bold text-gray-800">
+          <span *ngIf="mode === 'create'">Nueva Venta</span>
+          <span *ngIf="mode === 'edit'">Editar Venta</span>
+          <span *ngIf="mode === 'view'">Detalles de Venta</span>
+        </h2>
+        <button (click)="handleClose()" class="text-gray-600 hover:text-gray-900 p-1 sm:p-2">
+          <i class="fas fa-times text-sm sm:text-base"></i>
+        </button>
+      </div>
+      <div class="text-center mt-1 sm:mt-2">
+        <h1 class="text-base sm:text-xl md:text-2xl font-bold uppercase">BOLETA DE VENTA</h1>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="errorMessage" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 mx-2 sm:mx-3 mt-2 rounded text-xs sm:text-sm">
+      <p>{{ errorMessage }}</p>
+    </div>
+
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="text-center py-2">
+      <div class="inline-block animate-spin rounded-full h-4 w-4 sm:h-6 sm:w-6 border-t-2 border-b-2 border-blue-500"></div>
+      <p class="text-xs sm:text-sm text-gray-600 mt-1">Procesando...</p>
+    </div>
+
+    <!-- Form with scrollable content - Mejor padding para móviles -->
+    <div class="overflow-y-auto flex-grow">
+      <form [formGroup]="saleForm" (submit)="onSubmit()" class="p-2 sm:p-4 md:p-6">
+        <div class="grid grid-cols-1 gap-2 sm:gap-4 md:gap-6">
+          <!-- Date field above client section -->
+          <div class="mb-1 sm:mb-2">
+            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Fecha</label>
+            <input 
+              type="text" 
+              [value]="saleForm.get('saleDate')?.value | date: 'dd-MMM-yyyy':'':'es'" 
+              class="w-full p-1 sm:p-2 border rounded-md bg-gray-100 text-xs sm:text-sm cursor-not-allowed" 
+              readonly
+            >
+          </div>
+          
+          <!-- Cliente section - Mejorado spacing para móviles -->
+          <div class="bg-gray-50 p-2 sm:p-3 md:p-4 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 text-xs sm:text-base">Datos del Cliente</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">RUC/DNI</label>
+                <input 
+                  type="text" 
+                  formControlName="ruc" 
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="Ingrese RUC o DNI"
+                >
+                <div *ngIf="saleForm.get('ruc')?.touched && saleForm.get('ruc')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  RUC/DNI requerido
+                </div>
+              </div>
+  
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Nombre/Razón Social</label>
+                <input 
+                  type="text" 
+                  formControlName="name" 
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="Nombre del cliente"
+                >
+                <div *ngIf="saleForm.get('name')?.touched && saleForm.get('name')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Nombre requerido
+                </div>
+              </div>
+  
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Dirección</label>
+                <input 
+                  type="text" 
+                  formControlName="address" 
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="Dirección del cliente"
+                >
+                <div *ngIf="saleForm.get('address')?.touched && saleForm.get('address')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Dirección requerida
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Producto section - Mejorado layout para móviles -->
+          <div class="bg-gray-50 p-2 sm:p-3 md:p-4 rounded-lg border border-gray-200">
+            <h3 class="font-bold text-gray-700 mb-1.5 sm:mb-2 md:mb-3 text-xs sm:text-base">Detalles del Producto</h3>
+            <!-- Grid mejorado para responsive -->
+            <div class="space-y-2 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3 md:gap-4">
+              <div class="sm:col-span-2 lg:col-span-1">
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Producto</label>
+                <select 
+                  formControlName="productId"
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  (change)="onProductChange()"
+                >
+                  <option value="">Seleccione un producto</option>
+                  <option *ngFor="let product of products" [value]="product.id">{{ product.type }}</option>
+                </select>
+                <div *ngIf="saleForm.get('productId')?.touched && saleForm.get('productId')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Producto requerido
+                </div>
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Peso por paquete (Kg)</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  formControlName="weight"
+                  (input)="calculateTotals()"
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="0.00"
+                >
+                <div *ngIf="saleForm.get('weight')?.touched && saleForm.get('weight')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Peso válido requerido
+                </div>
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Cantidad de paquetes</label>
+                <input 
+                  type="number"
+                  min="1"
+                  formControlName="packages"
+                  (input)="calculateTotals()"
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="1"
+                >
+                <div *ngIf="saleForm.get('packages')?.touched && saleForm.get('packages')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Cantidad requerida
+                </div>
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Precio por Kg (S/)</label>
+                <input 
+                  type="number"
+                  step="0.01"
+                  formControlName="pricePerKg"
+                  (input)="calculateTotals()"
+                  class="w-full p-1 sm:p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
+                  placeholder="0.00"
+                  [readonly]="mode === 'view'"
+                >
+                <div *ngIf="saleForm.get('pricePerKg')?.touched && saleForm.get('pricePerKg')?.invalid && mode !== 'view'" class="text-red-500 text-xs mt-0.5">
+                  Precio requerido
+                </div>
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Peso Total (Kg)</label>
+                <input 
+                  type="text"
+                  formControlName="totalWeight"
+                  class="w-full p-1 sm:p-2 border rounded-md bg-gray-100 text-xs sm:text-sm"
+                  readonly
+                >
+              </div>
+  
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-0.5">Precio Total (S/)</label>
+                <input 
+                  type="text"
+                  formControlName="totalPrice"
+                  class="w-full p-1 sm:p-2 border rounded-md bg-gray-100 text-xs sm:text-sm"
+                  readonly
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+    
+        <!-- Footer with totals - Mejorado layout para móviles -->
+        <div class="mt-3 sm:mt-4 md:mt-6 pt-2 sm:pt-3 md:pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div class="text-xs sm:text-sm text-gray-500">
+            <!-- Área para información adicional si es necesario -->
+          </div>
+          <div class="text-right w-full sm:w-auto">
+            <p class="text-sm sm:text-lg md:text-xl font-bold">TOTAL: S/ {{ saleForm.get('totalPrice')?.value || '0.00' }}</p>
+          </div>
+        </div>
+    
+        <!-- Action buttons - Mejorado layout para móviles -->
+        <div *ngIf="mode !== 'view'" class="mt-3 sm:mt-4 md:mt-6 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3">
+          <button 
+            type="button" 
+            (click)="handleClose()" 
+            class="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            [disabled]="saleForm.invalid || isLoading" 
+            class="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+          >
+            {{ mode === 'create' ? 'Guardar Venta' : 'Actualizar Venta' }}
+          </button>
+        </div>
+        
+        <!-- Solo botón de cerrar para el modo view -->
+        <div *ngIf="mode === 'view'" class="mt-3 sm:mt-4 md:mt-6 flex justify-center">
+          <button 
+            type="button" 
+            (click)="handleClose()" 
+            class="px-4 sm:px-8 py-1.5 sm:py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
+          >
+            Cerrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,239 @@
+<div class="p-4 md:p-6 bg-blue-50 min-h-screen">
+    <!-- Título con icono -->
+    <h2 class="text-2xl font-semibold text-blue-900 mb-4 flex items-center">
+        <i class="fas fa-chart-line mr-2"></i>
+        Gestión de Ventas
+    </h2>
+    
+    <!-- Botones principales (Agregar Venta, Boleta y Excel) -->
+    <div class="flex flex-wrap gap-3 mb-4">
+        <!-- Botón de Agregar Venta -->
+        <button 
+            (click)="openCreateModal()"
+            class="px-3 py-2 bg-green-500 text-white rounded flex items-center space-x-2 hover:bg-green-600 text-sm">
+            <i class="fas fa-cart-plus text-lg"></i>
+            <span>Agregar Venta</span>
+        </button>
+        
+        <!-- Botones descargables (Boleta y Excel) en mobile se colocan debajo -->
+        <div class="flex gap-2 ml-auto">
+            <!-- Botón Boleta -->
+            <button 
+                class="px-3 py-2 bg-yellow-500 text-white rounded flex items-center space-x-2 hover:bg-yellow-600 text-sm">
+                <i class="fas fa-file-invoice text-lg"></i>
+                <span class="hidden sm:inline">Boleta</span>
+            </button>
+            
+            <!-- Botón Excel -->
+            <button 
+                class="px-3 py-2 bg-blue-500 text-white rounded flex items-center space-x-2 hover:bg-blue-600 text-sm">
+                <i class="fas fa-file-excel text-lg"></i>
+                <span class="hidden sm:inline">Excel</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Barra de búsqueda y filtros -->
+    <div class="flex flex-col sm:flex-row flex-wrap gap-2 mb-4">
+        <div class="flex items-center border rounded bg-white w-full sm:w-auto flex-1">
+            <i class="fas fa-search text-gray-400 mx-3"></i>
+            <input 
+                type="text" 
+                [(ngModel)]="searchTerm" 
+                (input)="filterSales()" 
+                placeholder="Buscar por nombre..." 
+                class="p-2 flex-1 outline-none"
+            />
+        </div>
+        
+        <div class="flex gap-2 flex-1 flex-wrap">
+            <div class="flex items-center border rounded bg-white">
+                <i class="fas fa-calendar text-gray-400 mx-3"></i>
+                <input 
+                    type="date" 
+                    [(ngModel)]="searchDate" 
+                    class="p-2 outline-none"
+                />
+            </div>
+            <button 
+                (click)="filterByDate()" 
+                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center">
+                <i class="fas fa-filter mr-1"></i>
+                <span>Filtrar</span>
+            </button>
+        </div>
+        
+        <div class="flex items-center border rounded bg-white">
+            <i class="fas fa-box text-gray-400 mx-3"></i>
+            <select [(ngModel)]="selectedProduct" (change)="filterByProduct()" class="p-2 outline-none">
+                <option value="">Todos los productos</option>
+                <option *ngFor="let product of products" [value]="product.id">{{ product.type }}</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Vista de tabla para pantallas medianas y grandes -->
+    <div class="hidden md:block overflow-x-auto w-full">
+        <table class="w-full border-separate border-spacing-y-2 text-sm">
+            <thead>
+                <tr class="bg-blue-200 text-blue-900 text-center">
+                    <th class="px-2 py-3 font-semibold rounded-l-lg">
+                        <i class="fas fa-calendar-day mr-1"></i> Fecha
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-user mr-1"></i> Nombre
+                    </th>
+                    <th class="px-2 py-3 font-semibold hidden lg:table-cell">
+                        <i class="fas fa-id-card mr-1"></i> RUC
+                    </th>
+                    <th class="px-2 py-3 font-semibold hidden xl:table-cell">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Dirección
+                    </th>
+                    <th class="px-2 py-3 font-semibold hidden lg:table-cell">
+                        <i class="fas fa-box mr-1"></i> Producto
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-weight mr-1"></i> Peso
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-box-open mr-1"></i> Paquetes
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-balance-scale mr-1"></i> Total Kg
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-tag mr-1"></i> S/ por Kg
+                    </th>
+                    <th class="px-2 py-3 font-semibold">
+                        <i class="fas fa-money-bill-wave mr-1"></i> Total S/
+                    </th>
+                    <th class="px-2 py-3 font-semibold rounded-r-lg">
+                        <i class="fas fa-cog mr-1"></i> Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let sale of paginatedSales" class="bg-white hover:bg-blue-50 text-center shadow-sm">
+                    <td class="px-2 py-3 rounded-l-lg">{{ sale.saleDate | date:'dd-MMM-yyyy' }}</td>
+                    <td class="px-2 py-3 font-medium">{{ sale.name }}</td>
+                    <td class="px-2 py-3 hidden lg:table-cell">{{ sale.ruc }}</td>
+                    <td class="px-2 py-3 hidden xl:table-cell">{{ sale.address }}</td>
+                    <td class="px-2 py-3 hidden lg:table-cell">{{ getProductNameById(sale.productId) }}</td>
+                    <td class="px-2 py-3">{{ sale.weight }}</td>
+                    <td class="px-2 py-3">{{ sale.packages }}</td>
+                    <td class="px-2 py-3">{{ sale.totalWeight }}</td>
+                    <td class="px-2 py-3">S/ {{ sale.pricePerKg | number:'1.2-2' }}</td>
+                    <td class="px-2 py-3 font-medium">S/ {{ sale.totalPrice }}</td>
+                    <td class="px-2 py-3 rounded-r-lg">
+                        <div class="flex justify-center space-x-2 text-lg">
+                            <button class="text-blue-500 hover:text-blue-700 p-1" (click)="openEditModal(sale)" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 p-1" (click)="deleteSale(sale.id)" title="Eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <button class="text-yellow-500 hover:text-yellow-700 p-1" (click)="viewSaleDetails(sale.id)" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Vista de tarjetas para móviles -->
+    <div class="md:hidden space-y-4">
+        <div *ngFor="let sale of paginatedSales" class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-medium text-blue-900">{{ sale.name }}</h3>
+                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                    <i class="fas fa-calendar-day mr-1"></i>
+                    {{ sale.saleDate | date:'dd-MMM-yyyy' }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                <div class="flex items-center">
+                    <i class="fas fa-box text-gray-400 mr-2"></i>
+                    <span>{{ getProductNameById(sale.productId) }}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-id-card text-gray-400 mr-2"></i>
+                    <span>{{ sale.ruc }}</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-weight text-gray-400 mr-2"></i>
+                    <span>{{ sale.weight }} Kg</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-box-open text-gray-400 mr-2"></i>
+                    <span>{{ sale.packages }} paquetes</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-tag text-gray-400 mr-2"></i>
+                    <span>S/ {{ sale.pricePerKg | number:'1.2-2' }}/Kg</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-balance-scale text-gray-400 mr-2"></i>
+                    <span>{{ sale.totalWeight }} Kg total</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t pt-3">
+                <div class="font-bold text-blue-900">
+                    <i class="fas fa-money-bill-wave mr-1"></i>
+                    S/ {{ sale.totalPrice }}
+                </div>
+                <div class="flex space-x-3">
+                    <button class="text-blue-500 hover:text-blue-700 p-1" (click)="openEditModal(sale)">
+                        <i class="fas fa-edit text-lg"></i>
+                    </button>
+                    <button class="text-red-500 hover:text-red-700 p-1" (click)="deleteSale(sale.id)">
+                        <i class="fas fa-trash-alt text-lg"></i>
+                    </button>
+                    <button class="text-yellow-500 hover:text-yellow-700 p-1" (click)="viewSaleDetails(sale.id)">
+                        <i class="fas fa-eye text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje si no hay ventas -->
+    <div *ngIf="paginatedSales.length === 0" class="text-center p-6 bg-white rounded-lg shadow">
+        <i class="fas fa-exclamation-circle text-yellow-500 text-4xl mb-3"></i>
+        <p class="text-gray-600">No se encontraron ventas con los filtros aplicados</p>
+    </div>
+
+    <!-- Paginación -->
+    <div class="mt-4 flex justify-center space-x-2">
+        <button 
+            (click)="prevPage()" 
+            [disabled]="currentPage === 1" 
+            class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center"
+        >
+            <i class="fas fa-chevron-left mr-1"></i>
+            <span class="hidden sm:inline">Anterior</span>
+        </button>
+        <span class="px-4 py-2 bg-white rounded shadow text-blue-900 font-medium">{{ currentPage }} / {{ totalPages }}</span>
+        <button 
+            (click)="nextPage()" 
+            [disabled]="currentPage === totalPages" 
+            class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 flex items-center"
+        >
+            <span class="hidden sm:inline">Siguiente</span>
+            <i class="fas fa-chevron-right ml-1"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Modal de boleta -->
+<app-model-sale
+    [isOpen]="isModalOpen"
+    [mode]="modalMode"
+    [saleData]="selectedSale"
+    (closeModal)="closeModal()"
+    (saleCreated)="handleSaleCreated($event)"
+    (saleUpdated)="handleSaleUpdated($event)">
+</app-model-sale>

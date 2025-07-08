@@ -1,0 +1,177 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center sm:p-0">
+      <!-- Overlay con animación de fade -->
+      <div class="fixed inset-0 bg-gray-700 bg-opacity-75 transition-opacity" (click)="onClose()"></div>
+  
+      <!-- Modal panel con animación de entrada -->
+      <div class="relative bg-white rounded-lg overflow-hidden shadow-xl transform transition-all w-full max-w-md mx-4 sm:mx-auto">
+        <!-- Header -->
+        <div class="bg-blue-700 px-4 py-4 sm:px-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg leading-6 font-medium text-white" id="modal-title">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {{ cost?.id ? 'Editar Costo Adicional' : 'Nuevo Costo Adicional' }}
+              </div>
+            </h3>
+            <button
+              type="button"
+              (click)="onClose()"
+              class="text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-700 rounded-full p-1 transition-colors"
+            >
+              <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Body -->
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <form [formGroup]="costForm" (ngSubmit)="onSubmit()" class="space-y-5">
+            <!-- Tipo de costo -->
+            <div>
+              <label for="costType" class="block text-sm font-bold text-gray-800 mb-1">Tipo de Costo <span class="text-red-500">*</span></label>
+              <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                </div>
+                <input 
+                  type="text" 
+                  id="costType" 
+                  formControlName="costType"
+                  class="pl-10 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors bg-blue-50"
+                  placeholder="Ej. Mantenimiento, Reparación"
+                  [ngClass]="{'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500': costForm.get('costType')?.invalid && costForm.get('costType')?.touched}"
+                >
+              </div>
+              <div *ngIf="costForm.get('costType')?.invalid && costForm.get('costType')?.touched" class="text-red-500 text-xs mt-1 flex items-center font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                El tipo de costo es requerido
+              </div>
+            </div>
+            
+            <!-- Monto -->
+            <div>
+              <label for="amount" class="block text-sm font-bold text-gray-800 mb-1">Monto <span class="text-red-500">*</span></label>
+              <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-blue-600 font-medium sm:text-sm">$</span>
+                </div>
+                <input 
+                  type="number" 
+                  id="amount" 
+                  formControlName="amount"
+                  class="pl-7 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors bg-blue-50"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  [ngClass]="{'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500': costForm.get('amount')?.invalid && costForm.get('amount')?.touched}"
+                >
+              </div>
+              <div *ngIf="costForm.get('amount')?.invalid && costForm.get('amount')?.touched" class="text-red-500 text-xs mt-1 flex items-center font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                El monto debe ser mayor o igual a 0
+              </div>
+            </div>
+            
+            <!-- Fecha de registro -->
+            <div>
+              <label for="registrationDate" class="block text-sm font-bold text-gray-800 mb-1">Fecha de Registro <span class="text-red-500">*</span></label>
+              <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <input 
+                  type="date" 
+                  id="registrationDate" 
+                  formControlName="registrationDate"
+                  class="pl-10 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors bg-blue-50"
+                  [ngClass]="{'border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-500': costForm.get('registrationDate')?.invalid && costForm.get('registrationDate')?.touched}"
+                >
+              </div>
+              <div *ngIf="costForm.get('registrationDate')?.invalid && costForm.get('registrationDate')?.touched" class="text-red-500 text-xs mt-1 flex items-center font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                La fecha es requerida
+              </div>
+            </div>
+            
+            <!-- Descripción -->
+            <div>
+              <label for="description" class="block text-sm font-bold text-gray-800 mb-1">Descripción</label>
+              <div class="relative rounded-md shadow-sm">
+                <div class="absolute top-3 left-3 flex items-start pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                </div>
+                <textarea 
+                  id="description" 
+                  formControlName="description"
+                  rows="4"
+                  class="pl-10 block w-full rounded-md border-2 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors resize-none bg-blue-50"
+                  placeholder="Descripción opcional del costo"
+                ></textarea>
+              </div>
+            </div>
+  
+            <!-- Sección informativa -->
+            <div class="p-4 bg-blue-100 rounded-md border-l-4 border-blue-500 flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm text-blue-800 font-medium">
+                Los campos marcados con <span class="text-red-500 font-bold">*</span> son obligatorios. Asegúrate de completar correctamente la información para un mejor control de los costos adicionales.
+              </p>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Footer con botones -->
+        <div class="bg-gray-100 px-4 py-4 sm:px-6 flex flex-col sm:flex-row-reverse sm:gap-3 gap-3 border-t-2 border-gray-200">
+          <button 
+            type="button" 
+            (click)="onSubmit()"
+            [disabled]="submitting || costForm.invalid"
+            class="w-full sm:w-auto inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-5 py-2.5 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span *ngIf="submitting" class="inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando...
+            </span>
+            <span *ngIf="!submitting" class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Guardar Cambios
+            </span>
+          </button>
+          <button 
+            type="button" 
+            (click)="onClose()"
+            class="w-full sm:w-auto inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-5 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

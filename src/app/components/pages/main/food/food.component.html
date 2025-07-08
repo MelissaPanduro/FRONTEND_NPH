@@ -1,0 +1,303 @@
+<!-- Encabezado -->
+<header class="bg-white shadow-md py-4">
+  <div class="w-full px-4">
+    <h1 class="text-3xl font-extrabold text-blue-900 dark:text-blue-400 md:text-4xl">
+      <span class="bg-gradient-to-r from-sky-400 to-blue-600 bg-clip-text text-transparent">
+        🐔 Alimentos
+      </span>
+    </h1>
+  </div>
+</header>
+
+<!-- Card 1 : Subtitulo, Boton agregar, Filtro de busqueda y boton de descarga -->
+<div class="container mx-auto my-6 p-4 bg-white shadow-md rounded-lg">
+
+  <!-- Subtitulo y boton de agregar -->
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold">Lista de Alimentos</h2>
+    <button *ngIf="!showInactive"
+      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded flex items-center text-base"
+      (click)="openModal()">
+      <i class="fas fa-plus mr-2"></i> Agregar Alimento
+    </button>
+  </div>
+
+  <!-- Filtro de busqueda -->
+  <div class="flex items-center justify-between mb-4">
+    <div *ngIf="!showInactive" class="flex items-center">
+      <label for="foodTypeFilter" class="font-semibold mr-2">Buscar por tipo:</label>
+      <input id="foodTypeFilter" type="text" class="border rounded p-2" [(ngModel)]="foodTypeFilter"
+        placeholder="Escribe el tipo de alimento" />
+      <button class="ml-2 bg-blue-500 text-white font-bold py-2 px-4 rounded" (click)="filterByType()">
+        Buscar
+      </button>
+    </div>
+
+    <!-- Boton de descargas -->
+    <div *ngIf="!showInactive" class="relative">
+      <button class="bg-blue-500 text-white font-bold py-2 px-4 rounded" (click)="toggleDescarga()">
+        Descargar <i class="fas fa-download ml-2"></i>
+      </button>
+      <div class="absolute right-0 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10"
+        [ngClass]="{ 'hidden': !descargaOpen }">
+        <ul>
+          <li>
+            <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              (click)="exportToPDF(); toggleDescarga()">PDF</button>
+          </li>
+          <li>
+            <button class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+              (click)="exportToExcel(); toggleDescarga()">Excel</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 2 : Switcher de estado y tabla de datos -->
+<div class="container mx-auto my-6 p-4 bg-white shadow-md rounded-lg">
+
+  <!-- Switcher de Estado -->
+  <div class="flex items-center mb-4">
+    <span class="mr-2 font-semibold">Mostrar:</span>
+    <label class="relative inline-flex items-center cursor-pointer" for="toggleInactive">
+      <input type="checkbox" class="sr-only peer" id="toggleInactive" (change)="toggleFoodList()"
+        [checked]="!showInactive">
+      <div
+        class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+      </div>
+      <span class="ml-3 text-sm font-medium text-gray-900">
+        {{ showInactive ? 'Alimentos Inactivos' : 'Alimentos Activos' }}
+      </span>
+    </label>
+  </div>
+
+  <!-- Tabla de datos -->
+  <div class="overflow-auto">
+    <table class="min-w-full text-center border-separate" style="border-spacing: 0 10px;">
+      <thead>
+        <tr>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Tipo de Alimento</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Marca</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Empaque</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Cantidad</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">U. medida</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100">Fecha de Registro</th>
+          <th class="px-6 py-3 text-lg font-semibold text-blue-900 bg-blue-100 rounded-tr-lg">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Iterar sobre la lista de alimentos -->
+        <tr
+          *ngFor="let food of getTableData()">
+          <td class="px-6 py-4 bg-gray-100">{{ food.foodType }}</td>
+          <td class="px-6 py-4 bg-gray-100">{{ food.foodBrand }}</td>
+          <td class="px-6 py-4 bg-gray-100">{{ food.packaging }}</td>
+          <td class="px-6 py-4 bg-gray-100">{{ food.amount }}</td>
+          <td class="px-6 py-4 bg-gray-100">{{ food.unitMeasure }}</td>
+          <td class="px-6 py-4 bg-gray-100">{{ food.entryDate | date }}</td>
+          <td class="px-6 py-4 bg-gray-100">
+
+            <!--Botón de restaurar para registros inactivos -->
+            <button *ngIf="showInactive" class="btn btn-sm" data-bs-toggle="tooltip" title="Restaurar"
+              (click)="openModalRestore(food.id_food)">
+              <img src="https://img.icons8.com/?size=100&id=50827&format=png&color=40C057" alt="Restaurar"
+                style="width: 20px; height: 20px;">
+            </button>
+
+            <ng-container *ngIf="!showInactive">
+              <button class="btn btn-sm mr-2" data-bs-toggle="modal" data-bs-target="#editEmployeeModal"
+                (click)="DatosFood(food)">
+                <img src="https://img.icons8.com/?size=100&id=H5dKJanZkZNk&format=png&color=228BE6" alt="Editar"
+                  style="width: 25px; height: 25px;">
+              </button>
+              <button class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Eliminar"
+                (click)="openModalDeactivate(food.id_food)">
+                <img src="https://img.icons8.com/?size=100&id=FgOBVsURv5ar&format=png&color=FA5252" alt="Eliminar"
+                  style="width: 25px; height: 25px;">
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginador -->
+  <div class="flex justify-center mt-4 space-x-2">
+    <button class="px-3 py-2 bg-gray-300 rounded-md text-sm font-semibold hover:bg-gray-400 disabled:opacity-50"
+      [disabled]="currentPage === 1" (click)="cambiarPagina(currentPage - 1)">
+      Anterior
+    </button>
+
+    <button *ngFor="let page of getPages()" class="px-3 py-2 rounded-md text-sm font-semibold"
+      [ngClass]="{'bg-blue-500 text-white': currentPage === page, 'bg-gray-200 hover:bg-gray-300': currentPage !== page}"
+      (click)="cambiarPagina(page)">
+      {{ page }}
+    </button>
+
+    <button class="px-3 py-2 bg-gray-300 rounded-md text-sm font-semibold hover:bg-gray-400 disabled:opacity-50"
+      [disabled]="currentPage === getPages().length" (click)="cambiarPagina(currentPage + 1)">
+      Siguiente
+    </button>
+  </div>
+
+</div>
+
+
+<!-- Modal para insertar un nuevo alimento -->
+<div *ngIf="isModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+    <h2 class="text-xl font-bold mb-4">Agregar Alimento</h2>
+    <form (ngSubmit)="addFood()">
+      <div class="mb-4">
+        <label for="foodType" class="block text-sm font-medium text-gray-700">Tipo de Alimento</label>
+        <select id="foodType" [(ngModel)]="newFood.foodType" name="foodType"
+          class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <option value="" disabled selected>Selecciona una opción</option>
+          <option value="Inicio de gallina ponedora">Inicio</option>
+          <option value="Crecimiento de gallina ponedora o desarrollo">Crecimiento</option>
+          <option value="Pre-postura gallinas ponedoras">Pre-Postura</option>
+          <option value="Postura">Postura</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="foodBrand" class="block text-sm font-medium text-gray-700">Marca de Alimento</label>
+        <select id="foodBrand" [(ngModel)]="newFood.foodBrand" name="foodBrand"
+          class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <option value="" disabled selected>Selecciona una opción</option>
+          <option value="Dekalb Brown">Dekalb Brown</option>
+          <option value="Avifort">Avifort</option>
+          <option value="Otra marca">Otra marca</option>
+        </select>
+      </div>
+      <div class="flex mb-4">
+        <div class="flex-1 mx-2">
+          <label for="packaging" class="block text-sm font-medium text-gray-700">Empaque</label>
+          <input type="text" id="packaging" [(ngModel)]="newFood.packaging" name="packaging"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="newFood.packaging && !validatePackaging(newFood.packaging)">
+            Solo se permiten letras y espacios.
+          </p>
+        </div>
+        <div class="flex-1 mr-2">
+          <label for="amount" class="block text-sm font-medium text-gray-700">Cantidad</label>
+          <input type="text" id="amount" [(ngModel)]="newFood.amount" name="amount"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="newFood.amount && !validateAmount(newFood.amount)">
+            Solo se permiten números enteros.
+          </p>
+        </div>
+        <div class="flex-1 ml-2">
+          <label for="unitMeasure" class="block text-sm font-medium text-gray-700">Unidad de medida</label>
+          <input type="text" id="unitMeasure" [(ngModel)]="newFood.unitMeasure" name="unitMeasure"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="newFood.unitMeasure && !validateUnitMeasure(newFood.unitMeasure)">
+            Ingresa una unidad válida:'kg'.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+          (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Agregar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal para editar un nuevo alimento -->
+<div *ngIf="isModalEdit" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+    <h2 class="text-xl font-bold mb-4">Editar Alimento</h2>
+    <form (ngSubmit)="updateFood()">
+      <div class="mb-4">
+        <label for="foodType" class="block text-sm font-medium text-gray-700">Tipo de Alimento</label>
+        <select id="foodType" [(ngModel)]="foodToEdit.foodType" name="foodType"
+          class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <option value="" disabled selected>Selecciona una opción</option>
+          <option value="Inicio de gallina ponedora">Inicio</option>
+          <option value="Crecimiento de gallina ponedora o desarrollo">Crecimiento</option>
+          <option value="Pre-postura gallinas ponedoras">Pre-Postura</option>
+          <option value="Postura">Postura</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="foodBrand" class="block text-sm font-medium text-gray-700">Marca de Alimento</label>
+        <select id="foodBrand" [(ngModel)]="foodToEdit.foodBrand" name="foodBrand"
+          class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <option value="" disabled selected>Selecciona una opción</option>
+          <option value="Dekalb Brown">Dekalb Brown</option>
+          <option value="Avifort">Avifort</option>
+          <option value="Otra marca">Otra marca</option>
+        </select>
+      </div>
+      <div class="flex mb-4">
+        <div class="flex-1 mx-2">
+          <label for="packaging" class="block text-sm font-medium text-gray-700">Empaque</label>
+          <input type="text" id="packaging" [(ngModel)]="foodToEdit.packaging" name="packaging"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="foodToEdit.packaging && !validatePackaging(foodToEdit.packaging)">
+            Solo se permiten letras y espacios.
+          </p>
+        </div>
+        <div class="flex-1 mr-2">
+          <label for="amount" class="block text-sm font-medium text-gray-700">Cantidad</label>
+          <input type="text" id="amount" [(ngModel)]="foodToEdit.amount" name="amount"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="foodToEdit.amount && !validateAmount(foodToEdit.amount)">
+            Solo se permiten números enteros.
+          </p>
+        </div>
+        <div class="flex-1 ml-2">
+          <label for="unitMeasure" class="block text-sm font-medium text-gray-700">Unidad de medida</label>
+          <input type="text" id="unitMeasure" [(ngModel)]="foodToEdit.unitMeasure" name="unitMeasure"
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2" required>
+          <p class="text-red-500 text-sm mt-1" *ngIf="foodToEdit.unitMeasure && !validateUnitMeasure(foodToEdit.unitMeasure)">
+            Ingresa una unidad válida:'kg'.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2"
+          (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal para desactivar un alimento -->
+<div *ngIf="isModalDeactivate" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Desactivar Registro</h2>
+    <p class="text-center text-gray-600 mb-4">¿Estás seguro que quieres desactivar este registro?</p>
+    <div class="flex justify-center space-x-2">
+      <button type="button"
+        class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-200"
+        (click)="closeModal()">Cancelar</button>
+      <button type="button" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
+        (click)="deactivateFood()">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para restaurar un alimento -->
+<div *ngIf="isModalRestore" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/3">
+    <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Restaurar Registro</h2>
+    <p class="text-center text-gray-600 mb-4">¿Estás seguro que quieres restaurar este registro?</p>
+    <div class="flex justify-center space-x-2">
+      <button type="button"
+        class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-200"
+        (click)="closeModal()">Cancelar</button>
+      <button type="button" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
+        (click)="restoreFood()">Aceptar</button>
+    </div>
+  </div>
+</div>
