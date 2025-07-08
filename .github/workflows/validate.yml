@@ -35,3 +35,4 @@ jobs:
 
       - name: 🎭 Run Playwright tests
         run: npx playwright install --with-deps && npx playwright test src/tests
+        
