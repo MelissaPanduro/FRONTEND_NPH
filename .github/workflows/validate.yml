@@ -3,7 +3,7 @@ name: Validate Frontend Code Quality | Test Playwright
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   validate:
