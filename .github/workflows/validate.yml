@@ -1,48 +1,37 @@
-# Nombre del workflow que aparecerá en la pestaña "Actions" de GitHub
 name: Validate Frontend Code Quality | Test Playwright
 
-# Este workflow se ejecutará cuando haya un push en la rama main
 on:
   push:
     branches:
       - main
 
 jobs:
-  validate:  # Nombre del job (tarea)
-    runs-on: ubuntu-latest  # Se ejecuta en un entorno Ubuntu en la nube (máquina virtual)
+  validate:
+    runs-on: ubuntu-latest
 
     steps:
-      # Paso 1: Clona el repositorio en el entorno de ejecución
       - name: 📥 Checkout repository
         uses: actions/checkout@v3
 
-      # Paso 2: Configura Node.js versión 18 para usarlo en los pasos siguientes
       - name: 📂 Set up Node.js 18
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # Paso 3: Instala todas las dependencias especificadas en package-lock.json
       - name: 📦 Install dependencies
         run: npm ci
 
-      # Paso 4: Ejecuta el compilador de TypeScript sin generar archivos (.js),
-      # para verificar que no haya errores de tipo
       - name: 🛠 Run TypeScript Compiler (Verifica errores)
-        run: npx tsc --noEmit || exit 1  # Si hay errores, falla el paso
+        run: npx tsc --noEmit || exit 1
 
-      # Paso 5: Intenta compilar el proyecto para producción
       - name: 📡 Run Build Process (Verifica compilación)
         run: npm run build -- --configuration=production || exit 1
 
-      # Paso 6: Levanta el servidor local en segundo plano
       - name: 🚀 Levantar servidor local
         run: npm run start &
 
-      # Paso 7: Espera 10 segundos para asegurarse de que el servidor haya iniciado
       - name: ⏱ Esperar que el servidor esté disponible
         run: sleep 10
 
-      # Paso 8: Instala dependencias necesarias para Playwright y ejecuta los tests
       - name: 🎭 Run Playwright tests
         run: npx playwright install --with-deps && npx playwright test src/tests
